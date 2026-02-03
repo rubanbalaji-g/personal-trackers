@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruban's Personal Trackers</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 3rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        
+        .card { 
+            background: white; 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            text-decoration: none; 
+            color: inherit; 
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .card h3 { margin: 0.5rem 0; color: var(--primary); }
+        .card p { font-size: 0.875rem; color: #64748b; text-align: center; }
+        .icon { font-size: 2rem; }
+        
+        /* Status badge for upcoming trackers */
+        .coming-soon { opacity: 0.6; cursor: not-allowed; }
+        .coming-soon:hover { transform: none; border-color: #e2e8f0; }
+        .badge { font-size: 0.7rem; background: #e2e8f0; padding: 2px 8px; border-radius: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Personal Tracker Hub</h1>
+        <p>Centralized monitoring for health, studies, and life progress.</p>
+    </header>
+
+    <div class="grid">
+        <a href="weight.html" class="card">
+            <span class="icon">⚖️</span>
+            <h3>Weight</h3>
+            <p>Tracking weight loss and nutrition goals.</p>
+        </a>
+
+        <div class="card coming-soon">
+            <span class="icon">🧠</span>
+            <h3>Study</h3>
+            <p>Neurology progress and DNB prep.</p>
+            <span class="badge">Coming Soon</span>
+        </div>
+
+        <div class="card coming-soon">
+            <span class="icon">🚴</span>
+            <h3>Workout</h3>
+            <p>Cycling metrics and fitness data.</p>
+            <span class="badge">Coming Soon</span>
+        </div>
+
+        <div class="card coming-soon">
+            <span class="icon">🌱</span>
+            <h3>Life</h3>
+            <p>Habits and long-term milestones.</p>
+            <span class="badge">Coming Soon</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
