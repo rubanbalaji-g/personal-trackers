@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Body Comp Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for the history list */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+        /* Smooth input transitions */
+        .form-input { transition: all 0.2s ease-in-out; }
+        .form-input:focus { transform: translateY(-1px); }
+
+        /* Animations */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-entry { animation: slideUpFade 0.4s ease-out forwards; }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans selection:bg-brand-100 selection:text-brand-900">
+
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-40 supports-[backdrop-filter]:bg-white/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-50 p-2 rounded-lg">
+                        <i class="ph-duotone ph-heartbeat text-brand-600 text-2xl"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">Medi<span class="text-brand-600">Track</span></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="sync-status" class="text-xs font-semibold text-brand-600 bg-brand-50 px-3 py-1 rounded-full flex items-center gap-2 opacity-0 transition-opacity duration-300">
+                        <i class="ph-bold ph-spinner animate-spin"></i> Syncing...
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Input Column -->
+        <div class="lg:col-span-7 space-y-6 animate-entry" style="animation-delay: 0.1s;">
+            
+            <!-- Profile Section -->
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100">
+                <h2 class="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <i class="ph-duotone ph-user-circle text-brand-500 text-xl"></i> 
+                    User Profile
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Select Profile</label>
+                        <div class="relative">
+                            <select id="profile-select" onchange="handleProfileChange()" class="form-input w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block w-full p-3.5 appearance-none cursor-pointer font-medium outline-none">
+                                <option value="Ruban" selected>Ruban</option>
+                                <option value="Yogi">Yogi</option>
+                                <option value="Custom">Custom User</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Biological Sex</label>
+                        <div class="relative">
+                            <select id="gender" onchange="toggleHipInput(); calculateLive();" class="form-input w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block w-full p-3.5 appearance-none cursor-pointer font-medium outline-none">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Measurements Section -->
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="ph-duotone ph-ruler text-brand-500 text-xl"></i> 
+                        Measurements
+                    </h2>
+                    <span class="text-[10px] font-bold tracking-widest text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md uppercase">Metric (CM / KG)</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                    <!-- Helper for input styling -->
+                    <div class="space-y-1.5 group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Age</label>
+                        <input type="number" id="age" placeholder="25" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5 group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Weight (kg)</label>
+                        <input type="number" id="weight" placeholder="75.0" step="0.1" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5 group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Height (cm)</label>
+                        <input type="number" id="height" placeholder="175" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5 group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Neck (cm)</label>
+                        <input type="number" id="neck" placeholder="38.0" step="0.1" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5 group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Waist (cm)</label>
+                        <input type="number" id="waist" placeholder="85.0" step="0.1" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+
+                    <div class="space-y-1.5 group hidden" id="hip-group">
+                        <label class="text-xs font-bold text-slate-400 group-focus-within:text-brand-600 transition-colors uppercase ml-1">Hip (cm)</label>
+                        <input type="number" id="hip" placeholder="95.0" step="0.1" oninput="calculateLive()" 
+                            class="form-input w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 block p-3 outline-none font-semibold placeholder:font-normal placeholder:text-slate-300">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <!-- Body Fat -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="ph-fill ph-percent text-4xl text-brand-600"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Body Fat</span>
+                    <span class="text-3xl font-bold text-slate-800 tracking-tight" id="res-bf">--%</span>
+                    <span class="text-[10px] font-semibold text-brand-600 mt-2 block bg-brand-50 w-fit px-2 py-0.5 rounded-full">Navy Method</span>
+                </div>
+
+                <!-- BMI -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="ph-fill ph-scales text-4xl text-emerald-600"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">BMI</span>
+                    <span class="text-3xl font-bold text-slate-800 tracking-tight" id="res-bmi">--</span>
+                    <span class="text-xs font-medium text-emerald-600 mt-2 block" id="res-bmi-cat">Normal</span>
+                </div>
+
+                <!-- TDEE -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="ph-fill ph-fire text-4xl text-orange-500"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">TDEE</span>
+                    <span class="text-3xl font-bold text-slate-800 tracking-tight" id="res-tdee">--</span>
+                    <span class="text-xs font-medium text-slate-400 mt-2 block">kcal / day</span>
+                </div>
+
+                <!-- Target -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br from-brand-500 to-purple-600 rounded-full blur-2xl opacity-40"></div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1 relative z-10">Target Weight</span>
+                    <span class="text-3xl font-bold text-white tracking-tight relative z-10" id="res-target">--</span>
+                    <span class="text-[10px] font-medium text-slate-400 mt-2 block relative z-10" id="target-label">for 15% BF</span>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="saveData()" class="group w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-brand-200 hover:shadow-brand-300 transition-all active:scale-[0.99] flex justify-center items-center gap-3">
+                <i class="ph-bold ph-floppy-disk text-xl group-hover:scale-110 transition-transform"></i>
+                Save Record
+            </button>
+        </div>
+
+        <!-- History Column -->
+        <div class="lg:col-span-5 h-full flex flex-col animate-entry" style="animation-delay: 0.2s;">
+            <div class="bg-white rounded-3xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden flex flex-col h-[600px] lg:h-auto lg:max-h-[800px]">
+                <div class="p-5 border-b border-slate-100 bg-white/50 backdrop-blur flex justify-between items-center sticky top-0 z-10">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-slate-100 p-1.5 rounded-lg">
+                            <i class="ph-duotone ph-clock-counter-clockwise text-slate-600"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800">History Log</h3>
+                    </div>
+                    <button onclick="fetchHistory()" class="group p-2 hover:bg-slate-50 rounded-lg transition-colors" title="Refresh">
+                        <i class="ph-bold ph-arrows-clockwise text-slate-400 group-hover:text-brand-600 transition-colors"></i>
+                    </button>
+                </div>
+                
+                <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-slate-50/50">
+                    <!-- Loading State -->
+                    <div class="flex flex-col items-center justify-center h-48 gap-3 text-slate-400">
+                        <i class="ph-duotone ph-spinner animate-spin text-2xl"></i>
+                        <span class="text-sm font-medium">Loading records...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        // --- Configuration & State ---
+        const SHEETDB_URL = 'https://sheetdb.io/api/v1/ck1pbgplpcnmk';
+        
+        const PRESETS = {
+            'Ruban': { height: 184, gender: 'male', targetBf: 0.15 },
+            'Yogi': { height: 160, gender: 'female', targetBf: 0.23 }
+        };
+
+        // --- Core Logic ---
+
+        function init() {
+            handleProfileChange();
+            fetchHistory(); // Auto-load history on startup
+        }
+
+        function toggleHipInput() {
+            const gender = document.getElementById('gender').value;
+            const hipGroup = document.getElementById('hip-group');
+            if (gender === 'female') {
+                hipGroup.classList.remove('hidden');
+            } else {
+                hipGroup.classList.add('hidden');
+            }
+        }
+
+        function handleProfileChange() {
+            const profile = document.getElementById('profile-select').value;
+            const heightInput = document.getElementById('height');
+            const genderSelect = document.getElementById('gender');
+            
+            if (PRESETS[profile]) {
+                heightInput.value = PRESETS[profile].height;
+                genderSelect.value = PRESETS[profile].gender;
+                toggleHipInput(); // Update UI for gender change
+                
+                // Flash the height input to show it updated
+                heightInput.classList.add('bg-brand-50');
+                setTimeout(() => heightInput.classList.remove('bg-brand-50'), 500);
+            }
+            calculateLive();
+        }
+
+        function calculateLive() {
+            const gender = document.getElementById('gender').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const neck = parseFloat(document.getElementById('neck').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const hip = parseFloat(document.getElementById('hip').value);
+            const age = parseFloat(document.getElementById('age').value);
+
+            // Basic reset if data missing
+            if (!weight || !height || !neck || !waist) {
+                resetDisplays();
+                return null;
+            }
+
+            // 1. BMI Calculation
+            const bmi = weight / Math.pow(height / 100, 2);
+            document.getElementById('res-bmi').innerText = bmi.toFixed(1);
+            
+            const bmiCat = getBMICategory(bmi);
+            const bmiEl = document.getElementById('res-bmi-cat');
+            bmiEl.innerText = bmiCat.label;
+            bmiEl.className = `text-xs font-medium mt-2 block ${bmiCat.color}`;
+
+            // 2. Body Fat (Navy Method)
+            let bodyFat = 0;
+            if (gender === 'male') {
+                const logWaistNeck = Math.log10(waist - neck);
+                const logHeight = Math.log10(height);
+                bodyFat = 495 / (1.0324 - 0.19077 * logWaistNeck + 0.15456 * logHeight) - 450;
+            } else {
+                if (!hip) return null; // Wait for hip
+                const logWaistHipNeck = Math.log10(waist + hip - neck);
+                const logHeight = Math.log10(height);
+                bodyFat = 495 / (1.29579 - 0.35004 * logWaistHipNeck + 0.22100 * logHeight) - 450;
+            }
+            
+            bodyFat = Math.max(2, bodyFat); // minimal sanity check
+            document.getElementById('res-bf').innerText = bodyFat.toFixed(1) + '%';
+
+            // 3. TDEE (Mifflin-St Jeor) - Sedentary default
+            // Men: (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) + 5
+            // Women: (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) - 161
+            let bmr = (10 * weight) + (6.25 * height) - (5 * (age || 30)); // Default age 30 if empty
+            bmr += (gender === 'male' ? 5 : -161);
+            const tdee = bmr * 1.2; 
+            document.getElementById('res-tdee').innerText = Math.round(tdee);
+
+            // 4. Target Weight Calculation
+            const desiredBF = (gender === 'male') ? 0.15 : 0.23;
+            const currentLeanMass = weight * (1 - (bodyFat / 100));
+            // To have desiredBF, LeanMass must be (1 - desiredBF) of TotalWeight
+            // TargetWeight = LeanMass / (1 - desiredBF)
+            const targetWeight = currentLeanMass / (1 - desiredBF);
+            
+            document.getElementById('res-target').innerText = targetWeight.toFixed(1) + " kg";
+            document.getElementById('target-label').innerText = `for ${(desiredBF * 100)}% BF`;
+
+            return { bodyFat, bmi, tdee };
+        }
+
+        function getBMICategory(bmi) {
+            if (bmi < 18.5) return { label: 'Underweight', color: 'text-blue-500' };
+            if (bmi < 25) return { label: 'Normal', color: 'text-emerald-600' };
+            if (bmi < 30) return { label: 'Overweight', color: 'text-orange-500' };
+            return { label: 'Obese', color: 'text-red-500' };
+        }
+
+        function resetDisplays() {
+            document.getElementById('res-bf').innerText = '--%';
+            document.getElementById('res-bmi').innerText = '--';
+            document.getElementById('res-tdee').innerText = '--';
+            document.getElementById('res-target').innerText = '--';
+        }
+
+        // --- SheetDB Integration ---
+
+        async function saveData() {
+            const metrics = calculateLive();
+            if (!metrics) {
+                showToast('Please fill all required fields correctly', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            // Create payload matching your SheetDB headers
+            const data = {
+                id: crypto.randomUUID().split('-')[0],
+                timestamp: new Date().toISOString(),
+                profile: document.getElementById('profile-select').value,
+                gender: document.getElementById('gender').value,
+                age: document.getElementById('age').value || 0,
+                weight: document.getElementById('weight').value,
+                height: document.getElementById('height').value,
+                neck: document.getElementById('neck').value,
+                waist: document.getElementById('waist').value,
+                hip: document.getElementById('hip').value || 0,
+                body_fat: metrics.bodyFat.toFixed(2),
+                bmi: metrics.bmi.toFixed(2),
+                tdee: Math.round(metrics.tdee)
+            };
+
+            try {
+                // Post to SheetDB
+                const response = await fetch(SHEETDB_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: data })
+                });
+
+                if (response.ok) {
+                    showToast('Record saved successfully', 'success');
+                    // Reset non-fixed fields optionally? sticking to keeping them for now
+                    fetchHistory();
+                } else {
+                    throw new Error('API Error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to save data. Check network.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function fetchHistory() {
+            const listContainer = document.getElementById('history-list');
+            // Show skeleton or loading
+            listContainer.innerHTML = `
+                <div class="space-y-3 animate-pulse">
+                    ${[1,2,3].map(() => `
+                    <div class="h-16 bg-slate-200 rounded-xl"></div>
+                    `).join('')}
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(SHEETDB_URL);
+                const data = await response.json();
+                
+                // Sort by timestamp descending
+                data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                listContainer.innerHTML = '';
+                
+                if (data.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-48 gap-3 text-slate-400">
+                            <i class="ph-duotone ph-notebook text-3xl"></i>
+                            <span class="text-sm font-medium">No records found yet.</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    const dateObj = new Date(item.timestamp);
+                    const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit' });
+                    
+                    const isRuban = item.profile === 'Ruban';
+                    const isYogi = item.profile === 'Yogi';
+                    
+                    // Style config based on user
+                    let avatarBg = 'bg-slate-100 text-slate-500';
+                    let avatarContent = `<span class="font-bold text-sm">${item.profile ? item.profile.charAt(0) : 'U'}</span>`;
+                    
+                    if (isRuban) {
+                        avatarBg = 'bg-blue-100 text-blue-600';
+                        // Using Emoji for monkey as Phosphor doesn't have a standard monkey icon
+                        avatarContent = `<span class="text-xl">🐵</span>`;
+                    } else if (isYogi) {
+                        avatarBg = 'bg-pink-100 text-pink-600';
+                        avatarContent = `<i class="ph-fill ph-baby text-xl"></i>`;
+                    }
+
+                    const el = document.createElement('div');
+                    // Staggered animation
+                    el.style.animation = `slideUpFade 0.3s ease-out forwards ${index * 0.05}s`;
+                    el.style.opacity = '0'; // Initial state for animation
+                    
+                    el.className = 'group p-4 rounded-xl border border-slate-100 bg-white hover:border-brand-200 hover:shadow-md transition-all cursor-default relative';
+                    
+                    el.innerHTML = `
+                        <div class="flex justify-between items-center relative z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center shadow-inner">
+                                    ${avatarContent}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-slate-800 text-sm">${item.weight}<span class="text-xs font-normal text-slate-400">kg</span></span>
+                                        <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                                        <span class="text-xs font-semibold text-slate-500">${parseFloat(item.body_fat).toFixed(1)}% BF</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 font-medium uppercase tracking-wide mt-0.5">
+                                        ${dateStr} &bull; ${timeStr}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">BMI</div>
+                                <div class="font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded-md text-xs border border-slate-100">
+                                    ${parseFloat(item.bmi).toFixed(1)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(el);
+                });
+
+            } catch (error) {
+                console.error(error);
+                listContainer.innerHTML = `
+                    <div class="p-6 text-center border-2 border-dashed border-red-200 rounded-xl bg-red-50 text-red-500 text-sm">
+                        <i class="ph-bold ph-warning-circle text-xl mb-2 block"></i>
+                        Unable to load history.<br>Please check your connection.
+                    </div>
+                `;
+            }
+        }
+
+        // --- UI Utilities ---
+        function setLoading(isLoading) {
+            const sync = document.getElementById('sync-status');
+            if (isLoading) {
+                sync.classList.remove('opacity-0');
+            } else {
+                sync.classList.add('opacity-0');
+            }
+        }
+
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Modern toast styling
+            const baseClass = "toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg shadow-slate-200/50 border text-sm font-semibold backdrop-blur-md min-w-[300px]";
+            
+            if (type === 'success') {
+                toast.className = `${baseClass} bg-white/95 border-emerald-100 text-emerald-800`;
+                toast.innerHTML = `<i class="ph-fill ph-check-circle text-xl text-emerald-500"></i> ${message}`;
+            } else {
+                toast.className = `${baseClass} bg-white/95 border-red-100 text-red-800`;
+                toast.innerHTML = `<i class="ph-fill ph-warning-circle text-xl text-red-500"></i> ${message}`;
+            }
+            
+            container.appendChild(toast);
+            
+            // Remove after 3s
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease-in';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
